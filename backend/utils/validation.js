@@ -13,7 +13,7 @@ export const sanitizeInput = (input) => {
   if (typeof input === 'object' && input !== null) {
     const sanitized = {};
     for (const key in input) {
-      if (input.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(input, key)) {
         sanitized[key] = sanitizeInput(input[key]);
       }
     }

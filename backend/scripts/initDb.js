@@ -44,7 +44,12 @@ const initializeDatabase = async () => {
     console.log('Schema created successfully');
     
     // Create default admin user with hashed password
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+      console.error('⚠️  ERROR: ADMIN_PASSWORD environment variable is required!');
+      console.error('Please set ADMIN_PASSWORD in your .env file before running this script.');
+      process.exit(1);
+    }
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
     
     await client.query(

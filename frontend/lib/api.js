@@ -13,9 +13,12 @@ const api = axios.create({
 // Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Check if running in browser (not SSR)
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -28,11 +31,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
       // Token expired or invalid
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/admin/login')) {
+      if (!window.location.pathname.includes('/admin/login')) {
         window.location.href = '/admin/login';
       }
     }

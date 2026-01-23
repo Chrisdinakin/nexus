@@ -15,7 +15,11 @@ export default function Contact() {
     e.preventDefault();
     setStatus('sending');
     
-    // Simulate sending (in production, integrate with a contact API or service)
+    // TODO: Integrate with a real email service or backend endpoint in production
+    // Options: SendGrid, Mailgun, AWS SES, or create a backend endpoint
+    // Example backend endpoint: POST /api/contact with { name, email, message }
+    
+    // Simulate sending (remove this in production)
     setTimeout(() => {
       setStatus('sent');
       setFormData({ name: '', email: '', message: '' });

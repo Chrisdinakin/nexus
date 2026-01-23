@@ -30,10 +30,17 @@ export const verifyToken = (req, res, next) => {
 
 /**
  * Middleware to check if user is admin
+ * NOTE: Currently checks if user is authenticated. 
+ * TODO: Add role-based access control by:
+ * 1. Adding a 'role' column to users table
+ * 2. Checking req.user.role === 'admin'
+ * 3. Implementing proper RBAC for different permission levels
  */
 export const isAdmin = (req, res, next) => {
   if (!req.user || !req.user.id) {
     return res.status(403).json({ error: 'Access denied' });
   }
+  // Currently, all authenticated users are considered admins
+  // In a multi-user system, add proper role checking here
   next();
 };
