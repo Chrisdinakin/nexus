@@ -2,6 +2,8 @@
 
 A high-end, full-stack portfolio website with a custom Content Management System (CMS) backend.
 
+> **🔒 Security Update (2024-01-23):** All critical Next.js vulnerabilities have been resolved. See [SECURITY_ADVISORY.md](SECURITY_ADVISORY.md) for details.
+
 ## 🚀 Features
 
 ### Public Portfolio
@@ -29,7 +31,7 @@ A high-end, full-stack portfolio website with a custom Content Management System
 ## 🛠 Tech Stack
 
 ### Frontend
-- **Next.js 14** - React framework
+- **Next.js 14.2.35** - React framework (security patched)
 - **Tailwind CSS** - Utility-first CSS
 - **Framer Motion** - Animation library
 - **Axios** - HTTP client
