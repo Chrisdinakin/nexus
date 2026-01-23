@@ -3,9 +3,24 @@
 ## CodeQL Analysis Results
 
 ### Date: January 23, 2024
+### Last Updated: January 23, 2024 (Post Next.js Security Update)
 
 ## Summary
-CodeQL analysis completed with 1 alert identified. This alert has been reviewed and is a false positive given our authentication architecture.
+CodeQL analysis completed with 1 alert identified (false positive). Additionally, multiple critical Next.js vulnerabilities were discovered and resolved by updating from version 14.0.4 to 14.2.35.
+
+## Recent Security Updates
+
+### ✅ RESOLVED: Next.js Security Vulnerabilities (2024-01-23)
+**Action Taken:** Updated Next.js from 14.0.4 to 14.2.35
+
+**Vulnerabilities Fixed:**
+1. ✅ Denial of Service with Server Components (multiple variants)
+2. ✅ Authorization Bypass vulnerability
+3. ✅ Cache Poisoning
+4. ✅ Server-Side Request Forgery in Server Actions
+5. ✅ Authorization Bypass in Middleware
+
+**Details:** See [SECURITY_ADVISORY.md](SECURITY_ADVISORY.md) for complete information.
 
 ## Alerts Found
 
