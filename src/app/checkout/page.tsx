@@ -8,6 +8,7 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderNumber] = useState(() => Math.floor(Math.random() * 90000) + 10000);
 
   const shipping = totalPrice > 50 ? 0 : 9.99;
   const tax = totalPrice * 0.08;
@@ -49,7 +50,7 @@ export default function CheckoutPage() {
           <p className="text-6xl mb-4">🎉</p>
           <h1 className="text-3xl font-bold font-heading mb-3">ORDER PLACED!</h1>
           <p className="text-text-grey mb-2">Thank you for your purchase.</p>
-          <p className="text-text-grey mb-6">Order #ATH-{Math.floor(Math.random() * 90000) + 10000}</p>
+          <p className="text-text-grey mb-6">Order #ATH-{orderNumber}</p>
           <Link href="/shop" className="bg-accent-orange hover:bg-accent-orange/80 text-white px-8 py-3 rounded-lg font-semibold text-sm uppercase tracking-wider transition-all">
             Continue Shopping
           </Link>

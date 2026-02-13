@@ -39,7 +39,7 @@ function ShopContent() {
       case 'price-low': result.sort((a, b) => a.price - b.price); break;
       case 'price-high': result.sort((a, b) => b.price - a.price); break;
       case 'rating': result.sort((a, b) => b.rating - a.rating); break;
-      case 'newest': result.sort((a, b) => (a.badge === 'NEW' ? -1 : 1)); break;
+      case 'newest': result.sort((a) => (a.badge === 'NEW' ? -1 : 1)); break;
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
 
