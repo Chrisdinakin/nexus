@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
+import { useAuth } from '@/lib/auth-context';
+import CryptoPayment from '@/components/CryptoPayment';
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
+  const { user, placeOrder } = useAuth();
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber] = useState(() => Math.floor(Math.random() * 90000) + 10000);
@@ -13,6 +16,9 @@ export default function CheckoutPage() {
   const shipping = totalPrice > 50 ? 0 : 9.99;
   const tax = totalPrice * 0.08;
   const finalTotal = totalPrice + shipping + tax;
+
+  const [showCryptoPayment, setShowCryptoPayment] = useState(false);
+  const [cryptoOrderId] = useState(() => `ATH-${Math.floor(Math.random() * 90000) + 10000}`);
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -27,6 +33,32 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = () => {
+    // Save order to user's order history
+    if (user) {
+      placeOrder({
+        items: items.map(item => ({
+          productId: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          size: item.selectedSize,
+          color: item.selectedColor,
+          image: item.product.images[0] || '',
+        })),
+        subtotal: totalPrice,
+        shipping,
+        tax,
+        total: finalTotal,
+        paymentMethod: form.paymentMethod,
+        shippingAddress: {
+          address: form.address,
+          city: form.city,
+          state: form.state,
+          zip: form.zip,
+          country: form.country,
+        },
+      });
+    }
     setOrderPlaced(true);
     clearCart();
   };
@@ -132,13 +164,19 @@ export default function CheckoutPage() {
                   { id: 'card', label: 'Credit / Debit Card', icon: '💳' },
                   { id: 'paypal', label: 'PayPal', icon: '🅿️' },
                   { id: 'applepay', label: 'Apple Pay', icon: '🍎' },
+                  { id: 'crypto', label: 'Crypto (USDC / USDT / BTC)', icon: '₿' },
                 ].map(method => (
                   <label key={method.id} className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
                     form.paymentMethod === method.id ? 'border-accent-orange bg-accent-orange/5' : 'border-border hover:border-white/20'
                   }`}>
-                    <input type="radio" name="payment" checked={form.paymentMethod === method.id} onChange={() => updateForm('paymentMethod', method.id)} className="accent-accent-orange" />
+                    <input type="radio" name="payment" checked={form.paymentMethod === method.id} onChange={() => { updateForm('paymentMethod', method.id); setShowCryptoPayment(false); }} className="accent-accent-orange" />
                     <span className="text-lg">{method.icon}</span>
-                    <span className="text-sm font-semibold">{method.label}</span>
+                    <div>
+                      <span className="text-sm font-semibold">{method.label}</span>
+                      {method.id === 'crypto' && (
+                        <p className="text-xs text-text-grey mt-0.5">Pay with Bitcoin, USDC, or USDT — powered by blockchain</p>
+                      )}
+                    </div>
                   </label>
                 ))}
               </div>
@@ -153,13 +191,38 @@ export default function CheckoutPage() {
                 </div>
               )}
 
+              {form.paymentMethod === 'crypto' && showCryptoPayment && (
+                <div className="mt-4">
+                  <CryptoPayment
+                    amountUsd={finalTotal}
+                    orderId={cryptoOrderId}
+                    customerEmail={form.email}
+                    onPaymentConfirmed={() => {
+                      setShowCryptoPayment(false);
+                      handlePlaceOrder();
+                    }}
+                    onCancel={() => setShowCryptoPayment(false)}
+                  />
+                </div>
+              )}
+
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setStep(1)} className="flex-1 border border-border text-white py-3 rounded-lg font-semibold text-sm uppercase tracking-wider hover:border-white/30 transition-all">
                   Back
                 </button>
-                <button onClick={() => setStep(3)} className="flex-1 bg-accent-orange hover:bg-accent-orange/80 text-white py-3 rounded-lg font-semibold text-sm uppercase tracking-wider transition-all">
-                  Review Order
-                </button>
+                {form.paymentMethod === 'crypto' ? (
+                  <button
+                    onClick={() => setShowCryptoPayment(true)}
+                    disabled={showCryptoPayment}
+                    className="flex-1 bg-accent-orange hover:bg-accent-orange/80 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold text-sm uppercase tracking-wider transition-all"
+                  >
+                    {showCryptoPayment ? 'Complete Payment Above' : 'Pay with Crypto'}
+                  </button>
+                ) : (
+                  <button onClick={() => setStep(3)} className="flex-1 bg-accent-orange hover:bg-accent-orange/80 text-white py-3 rounded-lg font-semibold text-sm uppercase tracking-wider transition-all">
+                    Review Order
+                  </button>
+                )}
               </div>
             </div>
           )}

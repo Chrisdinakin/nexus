@@ -1,7 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { Product, CartItem } from '@/types';
+import { dbGetValue, dbSetValue } from '@/lib/db';
+
+const CART_KEY = 'cart_items';
 
 interface CartContextType {
   items: CartItem[];
@@ -17,6 +20,23 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const saved = dbGetValue<CartItem[]>(CART_KEY);
+    if (saved && Array.isArray(saved)) {
+      setItems(saved);
+    }
+    setLoaded(true);
+  }, []);
+
+  // Persist cart to localStorage on changes
+  useEffect(() => {
+    if (loaded) {
+      dbSetValue(CART_KEY, items);
+    }
+  }, [items, loaded]);
 
   const addToCart = useCallback((product: Product, size: string, color: string) => {
     setItems(prev => {

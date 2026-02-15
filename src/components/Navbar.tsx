@@ -1,15 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/lib/cart-context';
+import { useAuth } from '@/lib/auth-context';
 import { categories } from '@/data/products';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { totalItems } = useCart();
+  const { user, logout } = useAuth();
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-primary/80 backdrop-blur-md border-b border-border transition-all duration-300">
@@ -65,10 +80,71 @@ export default function Navbar() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
 
-            {/* Account */}
-            <Link href="/account" className="text-gray-300 hover:text-white transition-colors hidden sm:block">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            </Link>
+            {/* Account / User Menu */}
+            <div className="relative hidden sm:block" ref={userMenuRef}>
+              {user ? (
+                <>
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-accent-orange/20 border border-accent-orange/40 flex items-center justify-center text-xs font-bold text-accent-orange uppercase">
+                      {user.firstName[0]}{user.lastName[0]}
+                    </div>
+                    <span className="text-sm font-medium hidden lg:block max-w-[100px] truncate">
+                      {user.firstName}
+                    </span>
+                    <svg className={`w-3 h-3 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-secondary rounded-xl border border-border shadow-2xl overflow-hidden animate-fade-in">
+                      {/* User Header */}
+                      <div className="px-4 py-3 border-b border-border">
+                        <p className="text-sm font-semibold">{user.firstName} {user.lastName}</p>
+                        <p className="text-xs text-text-grey truncate">{user.email}</p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <Link href="/account" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-card transition-colors" onClick={() => setUserMenuOpen(false)}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                          My Account
+                        </Link>
+                        <Link href="/account?tab=orders" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-card transition-colors" onClick={() => setUserMenuOpen(false)}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                          Orders
+                        </Link>
+                        <Link href="/account?tab=wishlist" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-card transition-colors" onClick={() => setUserMenuOpen(false)}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                          Wishlist
+                        </Link>
+                        <Link href="/account?tab=settings" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-card transition-colors" onClick={() => setUserMenuOpen(false)}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          Settings
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-border py-1">
+                        <button
+                          onClick={() => { logout(); setUserMenuOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-danger/10 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link href="/login" className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                </Link>
+              )}
+            </div>
 
             {/* Cart */}
             <Link href="/cart" className="relative text-gray-300 hover:text-white transition-colors">
@@ -109,6 +185,28 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-secondary border-t border-border animate-fade-in">
           <div className="px-4 py-4 space-y-3">
+            {/* Mobile Auth */}
+            {user ? (
+              <div className="flex items-center gap-3 pb-3 mb-3 border-b border-border">
+                <div className="w-10 h-10 rounded-full bg-accent-orange/20 border border-accent-orange/40 flex items-center justify-center text-sm font-bold text-accent-orange uppercase">
+                  {user.firstName[0]}{user.lastName[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{user.firstName} {user.lastName}</p>
+                  <p className="text-xs text-text-grey truncate">{user.email}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2 pb-3 mb-3 border-b border-border">
+                <Link href="/login" className="flex-1 text-center bg-accent-orange text-white py-2.5 rounded-lg text-sm font-semibold" onClick={() => setMenuOpen(false)}>
+                  Sign In
+                </Link>
+                <Link href="/register" className="flex-1 text-center border border-border text-white py-2.5 rounded-lg text-sm font-semibold hover:border-white/30" onClick={() => setMenuOpen(false)}>
+                  Register
+                </Link>
+              </div>
+            )}
+
             <Link href="/shop" className="block text-sm text-gray-300 hover:text-white py-2" onClick={() => setMenuOpen(false)}>Shop All</Link>
             {categories.map(cat => (
               <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="block text-sm text-gray-300 hover:text-white py-2" onClick={() => setMenuOpen(false)}>
@@ -118,6 +216,21 @@ export default function Navbar() {
             <Link href="/shop?badge=SALE" className="block text-sm text-accent-orange hover:text-white py-2" onClick={() => setMenuOpen(false)}>Deals</Link>
             <Link href="/about" className="block text-sm text-gray-300 hover:text-white py-2" onClick={() => setMenuOpen(false)}>About</Link>
             <Link href="/contact" className="block text-sm text-gray-300 hover:text-white py-2" onClick={() => setMenuOpen(false)}>Contact</Link>
+
+            {user && (
+              <>
+                <div className="border-t border-border pt-3 mt-3 space-y-3">
+                  <Link href="/account" className="block text-sm text-gray-300 hover:text-white py-2" onClick={() => setMenuOpen(false)}>My Account</Link>
+                  <Link href="/account?tab=orders" className="block text-sm text-gray-300 hover:text-white py-2" onClick={() => setMenuOpen(false)}>Orders</Link>
+                  <button
+                    onClick={() => { logout(); setMenuOpen(false); }}
+                    className="block text-sm text-danger hover:text-danger/80 py-2"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
